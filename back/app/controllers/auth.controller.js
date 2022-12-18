@@ -13,6 +13,7 @@ const generateJWT = (user) => {
   return jwt.sign({
     id: user._id,
     username: user.username,
+    role: user.role,
     exp: parseInt(exp.getTime() / 1000),
   }, secret);
 };

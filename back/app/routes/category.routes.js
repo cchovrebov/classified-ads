@@ -1,22 +1,30 @@
+const express = require("express");
+const {
+  isSignedInMiddleware,
+  isAdminInMiddleware,
+} = require('../moddleware/moddleware')
+
+const app = express();
+
 module.exports = app => {
   const category = require("../controllers/category.controller.js");
 
-  var router = require("express").Router();
-
-  // Create a new category
-  router.post("/", category.create);
+  const router = require("express").Router();
 
   // Retrieve all categories
-  router.get("/", category.findAll);
+  router.get("/", app.use(isSignedInMiddleware), category.findAll);
 
   // Retrieve a single category with id
-  router.get("/:id", category.findOne);
+  router.get("/:id", app.use(isSignedInMiddleware), category.findOne);
 
   // Update a category with id
-  router.put("/:id", category.update);
+  router.put("/:id", app.use(isAdminInMiddleware), category.update);
 
   // Delete a category with id
-  router.delete("/:id", category.delete);
+  router.delete("/:id", app.use(isAdminInMiddleware), category.delete);
+
+  // Create a new category
+  router.post("/", app.use(isAdminInMiddleware), category.create);
 
   app.use("/api/category", router);
 };

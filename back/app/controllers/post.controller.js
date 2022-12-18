@@ -9,7 +9,7 @@ exports.create = (req, res) => {
     description: req.body.description,
     price: req.body.price,
     category: req.body.category,
-    image: req.body.image,
+    images: req.body.image,
     published: false
   });
 

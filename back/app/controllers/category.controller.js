@@ -4,19 +4,14 @@ const Category = db.category;
 // Create and Save a new Category
 exports.create = (req, res) => {
   // Validate request
-  // if (!req.body.title) {
-  //   res.status(400).send({ message: "Content can not be empty!" });
-  //   return;
-  // }
+  if (!req.body.title) {
+    res.status(400).send({ message: "Content can not be empty!" });
+    return;
+  }
 
   // Create a Category
   const category = new Category({
     title: req.body.title,
-    description: req.body.description,
-    price: req.body.price,
-    category: req.body.category,
-    image: req.body.image,
-    published: false
   });
 
   // Save Category in the database
@@ -51,7 +46,6 @@ exports.findAll = (req, res) => {
 exports.findOne = (req, res) => {
   const id = req.params.id;
 
-  console.log(id);
   Category.findById(id)
     .then(data => {
       if (!data)
@@ -67,7 +61,7 @@ exports.findOne = (req, res) => {
 
 // Update a Category by the id in the request
 exports.update = (req, res) => {
-  if (!req.body) {
+  if (!req.body.title) {
     return res.status(400).send({
       message: "Data to update can not be empty!"
     });
@@ -75,6 +69,7 @@ exports.update = (req, res) => {
 
   const id = req.params.id;
 
+  console.log(req.body, id);
   Category.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
     .then(data => {
       if (!data) {

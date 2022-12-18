@@ -1,7 +1,7 @@
 module.exports = mongoose => {
   const schema = mongoose.Schema(
     {
-      name: String,
+      title: String,
     },
     { timestamps: true }
   );
