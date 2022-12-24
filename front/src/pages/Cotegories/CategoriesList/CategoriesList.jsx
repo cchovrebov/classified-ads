@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import Grid from '@mui/material/Grid';
@@ -12,47 +12,86 @@ import Box from '@mui/material/Box';
 import AddCardIcon from '@mui/icons-material/AddCard';
 import FormControl from '@mui/material/FormControl';
 import { useSelector, useDispatch } from 'react-redux'
-import { setPost } from './categoriesSlice';
+import { setCategory, setCategories, setLoading, initialError, setError } from './categoriesSlice';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemAvatar from '@mui/material/ListItemAvatar';
-import Checkbox from '@mui/material/Checkbox';
-
-
+import DeleteIcon from '@mui/icons-material/Delete';
+import IconButton from '@mui/material/IconButton';
+import _ from 'lodash';
+import { getCategories, createCategory, removeCategory } from '../../../services/category'
+import LinearProgress from '@mui/material/LinearProgress';
 
 const theme = createTheme();
 
 const CategoriesList = () => {
-  const postCreateReducer = useSelector((state) => state.postCreateReducer);
+  const categoriesReducer = useSelector((state) => state.categoriesReducer);
   const dispatch = useDispatch()
 
-  const [checked, setChecked] = useState([1]);
-
-  const handleToggle = (value) => () => {
-    const currentIndex = checked.indexOf(value);
-    const newChecked = [...checked];
-
-    if (currentIndex === -1) {
-      newChecked.push(value);
-    } else {
-      newChecked.splice(currentIndex, 1);
-    }
-
-    setChecked(newChecked);
-  };
+  useEffect(() => {
+    dispatch(setLoading(true))
+    getCategories()
+      .then(data => {
+        dispatch(setCategories(data))
+        dispatch(setLoading(false))
+      }).catch(() => {
+        dispatch(setLoading(false))
+      })
+  }, [dispatch])
 
   const handleInputChange = (value, inputName) => {
-    dispatch(setPost({ inputName, value }))
+    dispatch(setCategory({ inputName, value }))
+  }
+
+  const handleRemove = async (id) => {
+    dispatch(setLoading(true))
+    try {
+      await removeCategory(id);
+      dispatch(setCategories(
+        _.filter(
+          categoriesReducer.categories,
+          category => category.id !== id
+        )
+      ))
+    } catch (error) {
+      alert('Something went wrong!')
+    } finally {
+      dispatch(setLoading(false))
+    }
   }
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log('Submit');
-  };
+    const {
+      title,
+    } = categoriesReducer.category
 
-  // title: req.body.title,
+    const error = { ...initialError };
+    dispatch(setError(error))
+    let hasError = false;
+    if (!title) {
+      error.title = { ...initialError.title, show: true };
+      hasError = true;
+    }
+
+    if (hasError) {
+      return dispatch(setError(error))
+    }
+
+
+    try {
+      dispatch(setLoading(true))
+      const createdCategory = await createCategory(categoriesReducer.category);
+      dispatch(setCategories([
+        ...categoriesReducer.categories,
+        createdCategory,
+      ]))
+    } catch (error) {
+      alert(error.message)
+    } finally {
+      dispatch(setLoading(false))
+    }
+  };
 
   return (
     <ThemeProvider theme={theme}>
@@ -73,10 +112,11 @@ const CategoriesList = () => {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
+                justifyContent: 'center',
                 width: '100%'
               }}
             >
-              <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
+              <Avatar sx={{ m: 1, bgcolor: 'primary.main' }}>
                 <AddCardIcon />
               </Avatar>
               <Typography component="h1" variant="h5">
@@ -94,8 +134,8 @@ const CategoriesList = () => {
                     name="title"
                     autoComplete="title"
                     autoFocus
-                    error={postCreateReducer?.error?.title?.show}
-                    helperText={postCreateReducer?.error?.title?.show ? postCreateReducer.error.title.message : ''}
+                    error={categoriesReducer?.error?.title?.show}
+                    helperText={categoriesReducer?.error?.title?.show ? categoriesReducer.error.title.message : ''}
                     onInput={(e) => handleInputChange(e.target.value, 'title')}
                   />
                 </FormControl>
@@ -110,54 +150,45 @@ const CategoriesList = () => {
             </Box>
           </Grid>
           <Container
+
             sx={{
-              bgcolor: 'background.paper',
-              mt: 12,
-              mb: 12,
-              xs: 12,
-            }} maxWidth="xs">
-
-            <Grid container fullWidth spacing={4}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  width: '100%'
-                }}
-              >
-
-                <List dense sx={{ width: '100%', bgcolor: 'background.paper' }}>
-                  {[0, 1, 2, 3].map((value) => {
-                    const labelId = `checkbox-list-secondary-label-${value}`;
-                    return (
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '100%'
+            }}>
+            <List style={{
+              margin: 0,
+              width: '100%',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+              {categoriesReducer.isLoading ?
+                <Box sx={{ width: '100%' }}>
+                  <LinearProgress />
+                </Box>
+                : null}
+              {
+                !categoriesReducer.isLoading && categoriesReducer.categories
+                  ? _.map(
+                    _.orderBy(categoriesReducer.categories, ['updatedAt'], ['desc']),
+                    (category) => (
                       <ListItem
-                        key={value}
+                        key={category.id}
                         secondaryAction={
-                          <Checkbox
-                            edge="end"
-                            onChange={handleToggle(value)}
-                            checked={checked.indexOf(value) !== -1}
-                            inputProps={{ 'aria-labelledby': labelId }}
-                          />
+                          <IconButton edge="end" aria-label="delete" onClick={() => handleRemove(category.id)}>
+                            <DeleteIcon />
+                          </IconButton>
                         }
-                        disablePadding
                       >
-                        <ListItemButton>
-                          <ListItemAvatar>
-                            <Avatar
-                              alt={`Avatar n°${value + 1}`}
-                              src={`/static/images/avatar/${value + 1}.jpg`}
-                            />
-                          </ListItemAvatar>
-                          <ListItemText id={labelId} primary={`Line item ${value + 1}`} />
-                        </ListItemButton>
+                        <ListItemText
+                          primary={category.title}
+                        />
                       </ListItem>
-                    );
-                  })}
-                </List>
-              </Box>
-            </Grid>
+                    )) : null
+              }
+            </List>
           </Container>
         </Container>
       </main>

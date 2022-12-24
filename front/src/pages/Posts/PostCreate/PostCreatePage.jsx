@@ -14,22 +14,35 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Upload from '../../../components/Upload/Upload'
-import Select, { SelectChangeEvent } from '@mui/material/Select';
+import Select from '@mui/material/Select';
 import TextareaAutosize from '@mui/base/TextareaAutosize';
 import { useSelector, useDispatch } from 'react-redux'
-import { setPost } from './postCreateSlice';
-
+import { setPost, initialError, setError, setLoadingPostCreate } from './postCreateSlice';
+import { setCategories, setLoading } from '../../Cotegories/CategoriesList/categoriesSlice';
+import { getCategories } from '../../../services/category';
+import { createPost } from '../../../services/post';
+import LinearProgress from '@mui/material/LinearProgress';
+import _ from 'lodash';
 
 const theme = createTheme();
 
 const PostCreatePage = () => {
-  const postCreateReducer = useSelector((state) => state.postCreateReducer);
+  const {
+    postCreateReducer,
+    categoriesReducer,
+  } = useSelector((state) => state);
   const dispatch = useDispatch()
 
-  console.log(postCreateReducer);
   useEffect(() => {
-    console.log('Load');
-  }, [])
+    dispatch(setLoading(true))
+    getCategories()
+      .then(data => {
+        dispatch(setCategories(data))
+        dispatch(setLoading(false))
+      }).catch(() => {
+        dispatch(setLoading(false))
+      })
+  }, [dispatch])
 
   const handleInputChange = (value, inputName) => {
     dispatch(setPost({ inputName, value }))
@@ -37,22 +50,53 @@ const PostCreatePage = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log('Submit');
+
+    const {
+      title,
+      price,
+      category,
+    } = postCreateReducer.post
+
+    const error = { ...initialError };
+    let hasError = false;
+    if (!title) {
+      error.title = { ...initialError.title, show: true };
+      hasError = true;
+    }
+    if (!price) {
+      error.price = { ...initialError.price, show: true };
+      hasError = true;
+    }
+    if (!category) {
+      error.category = { ...initialError.category, show: true };
+      hasError = true;
+    }
+
+    if (hasError) {
+      return dispatch(setError(error))
+    }
+
+    try {
+      dispatch(setLoadingPostCreate(true))
+      const createdPost = await createPost(postCreateReducer.post);
+      createdPost.images = _.map(
+        _.split(createdPost.images, '[SEPARATOR]'),
+        data_url => ({ data_url })
+      );
+      alert('Post created successfully, wait admin approval')
+    } catch (error) {
+      alert(error.message)
+    } finally {
+      dispatch(setLoadingPostCreate(false))
+    }
   };
 
-  // title: req.body.title,
-  // description: req.body.description,
-  // price: req.body.price,
-  // category: req.body.category,
-  // image: req.body.image,
-  // published: false
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Navigation />
       <main>
-
         <Container
           sx={{
             bgcolor: 'background.paper',
@@ -69,11 +113,11 @@ const PostCreatePage = () => {
                 width: '100%'
               }}
             >
-              <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
+              <Avatar sx={{ m: 1, bgcolor: 'primary.main' }}>
                 <AddCardIcon />
               </Avatar>
               <Typography component="h1" variant="h5">
-                Create ad
+                Create post
               </Typography>
               <Box component="form" noValidate onSubmit={handleSubmit}
                 style={{ width: '100%' }}>
@@ -116,13 +160,20 @@ const PostCreatePage = () => {
                     labelId="category"
                     id="category"
                     error={postCreateReducer?.error?.category?.show}
-                    helperText={postCreateReducer?.error?.category?.show ? postCreateReducer.error.category.message : ''}
                     label="Category"
                     onChange={(e) => handleInputChange(e.target.value, 'category')}
+                    value={postCreateReducer.post.category}
                   >
-                    <MenuItem value={10}>Ten</MenuItem>
-                    <MenuItem value={20}>Twenty</MenuItem>
-                    <MenuItem value={30}>Thirty</MenuItem>
+                    {categoriesReducer.isLoading ?
+                      <Box sx={{ width: '100%' }}>
+                        <LinearProgress />
+                      </Box>
+                      : null}
+                    {!categoriesReducer.isLoading ? _.map(
+                      _.orderBy(categoriesReducer.categories, ['title'], ['asc']),
+                      (category) => (
+                        <MenuItem key={category.id} value={category.id}>{category.title}</MenuItem>
+                      )) : null}
                   </Select>
                 </FormControl>
                 <FormControl style={{ width: '100%', marginBottom: '25px' }}>
@@ -130,8 +181,6 @@ const PostCreatePage = () => {
                     minRows={6}
                     placeholder="Description"
                     id="description"
-                    error={postCreateReducer?.error?.description?.show}
-                    helperText={postCreateReducer?.error?.description?.show ? postCreateReducer.error.description.message : ''}
                     style={{ width: '100%', resize: 'none', padding: '16px' }}
                     onChange={(e) => handleInputChange(e.target.value, 'description')}
                   />
@@ -150,6 +199,11 @@ const PostCreatePage = () => {
                 >
                   Create
                 </Button>
+                {postCreateReducer.isLoading ?
+                  <Box sx={{ width: '100%' }}>
+                    <LinearProgress />
+                  </Box>
+                  : null}
               </Box>
             </Box>
           </Grid>

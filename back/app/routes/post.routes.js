@@ -1,7 +1,11 @@
+const {
+  isAdminInMiddleware,
+} = require('../moddleware/moddleware')
+
 module.exports = app => {
   const post = require("../controllers/post.controller.js");
 
-  var router = require("express").Router();
+  const router = require("express").Router();
 
   // Create a new post
   router.post("/", post.create);
@@ -23,6 +27,9 @@ module.exports = app => {
 
   // Create a new post
   router.delete("/", post.deleteAll);
+
+  // Publish a category with id
+  router.put("/publish/:id", app.use(isAdminInMiddleware), post.publish);
 
   app.use("/api/post", router);
 };

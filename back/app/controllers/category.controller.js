@@ -68,8 +68,8 @@ exports.update = (req, res) => {
   }
 
   const id = req.params.id;
+  console.log(id, req.body);
 
-  console.log(req.body, id);
   Category.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
     .then(data => {
       if (!data) {

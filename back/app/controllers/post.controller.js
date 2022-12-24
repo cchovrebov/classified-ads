@@ -1,19 +1,25 @@
 const db = require("../models");
 const Post = db.post;
+const jwt = require('jsonwebtoken');
+const { secret } = require('../config/auth.config');
+const _ = require('lodash')
 
 // Create and Save a new Post
 exports.create = (req, res) => {
+  const token = req.headers.token
+  const user = jwt.verify(token, secret);
   // Create a Post
+  const imagesBase64 = _.map(req.body.images, 'data_url').join('[SEPARATOR]');
   const post = new Post({
     title: req.body.title,
     description: req.body.description,
     price: req.body.price,
     category: req.body.category,
-    images: req.body.image,
-    published: false
+    images: imagesBase64,
+    published: false,
+    user: user.id
   });
 
-  // Save Post in the database
   post
     .save(post)
     .then(data => {
@@ -29,7 +35,7 @@ exports.create = (req, res) => {
 
 // Retrieve all Posts from the database.
 exports.findAll = (req, res) => {
-  Post.find()
+  Post.find({ published: false })
     .then(data => {
       res.send(data);
     })
@@ -67,8 +73,17 @@ exports.update = (req, res) => {
   }
 
   const id = req.params.id;
+  const imagesBase64 = _.map(req.body.images, 'data_url').join('[SEPARATOR]');
+  const post = {
+    title: req.body.title,
+    description: req.body.description,
+    price: req.body.price,
+    category: req.body.category,
+    images: imagesBase64,
+    published: false
+  };
 
-  Post.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
+  Post.findByIdAndUpdate(id, post, { useFindAndModify: false })
     .then(data => {
       if (!data) {
         res.status(404).send({
@@ -132,6 +147,32 @@ exports.findAllPublished = (req, res) => {
       res.status(500).send({
         message:
           err.message || "Some error occurred while retrieving posts."
+      });
+    });
+};
+
+
+// Publish a Post by the id in the request
+exports.publish = (req, res) => {
+  if (!req.body) {
+    return res.status(400).send({
+      message: "Data to publish can not be empty!"
+    });
+  }
+
+  const id = req.params.id;
+
+  Post.findByIdAndUpdate(id, { published: true }, { useFindAndModify: false })
+    .then(data => {
+      if (!data) {
+        res.status(404).send({
+          message: `Cannot publish Post with id=${id}. Maybe Post was not found!`
+        });
+      } else res.send({ message: "Post was publish successfully." });
+    })
+    .catch(err => {
+      res.status(500).send({
+        message: "Error updating Post with id=" + id
       });
     });
 };

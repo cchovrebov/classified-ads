@@ -65,3 +65,13 @@ exports.signIn = (req, res) => {
     });
 };
 
+// Sign in
+exports.validate = (req, res) => {
+  try {
+    const token = req.headers.token
+    const user = jwt.verify(token, secret);
+    return res.send(user);
+  } catch (error) {
+    return res.send({});
+  }
+};

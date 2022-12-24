@@ -5,8 +5,8 @@ const initialState = {
   isLoading: false,
 }
 
-const counterSlice = createSlice({
-  name: 'postsSlice',
+const postsApproveSlice = createSlice({
+  name: 'postsApproveSlice',
   initialState,
   reducers: {
     setLoading(state, action) {
@@ -21,5 +21,5 @@ const counterSlice = createSlice({
   },
 })
 
-export const { setLoading, setPosts, setError } = counterSlice.actions
-export default counterSlice.reducer
+export const { setLoading, setPosts, setError } = postsApproveSlice.actions
+export default postsApproveSlice.reducer

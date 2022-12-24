@@ -22,7 +22,7 @@ const pages = [
   },
   {
     label: 'Create ad',
-    link: '/create-ad',
+    link: '/create-post',
   },
   {
     label: 'Approve ads',

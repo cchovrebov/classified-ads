@@ -10,69 +10,91 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import Navigation from '../../../components/Navigation/Navigation'
-
-const cards = [1];
+import Navigation from '../../../components/Navigation/Navigation';
+import { useSelector, useDispatch } from 'react-redux';
+import { getPublishedPosts } from '../../../services/post';
+import { setLoading, setPosts } from './postsSlice';
+import IconButton from '@mui/material/IconButton';
+import Link from '@mui/material/Link';
+import _ from 'lodash'
 
 const theme = createTheme();
 
 const PostsPage = () => {
+  const postsReducer = useSelector((state) => state.postsReducer);
+  const dispatch = useDispatch()
+
   useEffect(() => {
-    console.log('Load');
-  }, [])
+    dispatch(setLoading(true))
+    getPublishedPosts()
+      .then(data => {
+        const mappedData = _.map(data, (post) => ({
+          ...post,
+          images: _.map(
+            _.split(post.images, '[SEPARATOR]'),
+            data_url => ({ data_url })
+          ),
+        }))
+        dispatch(setPosts(mappedData))
+        dispatch(setLoading(false))
+      }).catch(() => {
+        dispatch(setLoading(false))
+      })
+  }, [dispatch])
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Navigation />
       <main>
-
-        <Container
-          sx={{
-            bgcolor: 'background.paper',
-            mt: 8,
-            mb: 6,
-          }} maxWidth="md">
-          <Grid container spacing={4}>
-            {cards.map((card) => (
-              <Grid item key={card} xs={12}>
-                <Card
-                  sx={{ height: '10rem', display: 'flex', flexDirection: 'column' }}
-                >
-                  <Grid container spacing={4}>
-                    <Grid item xs={4}>
-                      <CardMedia
-                        component="img"
-                        image="https://source.unsplash.com/random"
-                        alt="random"
-                      />
-
-                    </Grid>
-                    <Grid item xs={8}>
-
-                      <CardContent sx={{ flexGrow: 1 }}>
-                        <Typography gutterBottom variant="h5" component="h2">
-                          Heading
-                        </Typography>
-                        <Typography>
-                          This is a media card. You can use this section to describe the
-                          content.
-                        </Typography>
-                      </CardContent>
-                      <CardActions>
-                        <Button size="small">View</Button>
+        <Container style={{ marginTop: '30px' }}>
+          <Grid container spacing={6}>
+            {_.map(
+              _.orderBy(postsReducer.posts, ['createdAt'], ['desc']),
+              (post) => (
+                <Grid item key={post.id} xs={12} sm={6} md={4}>
+                  <Card>
+                    <CardMedia
+                      component="img"
+                      alt="green iguana"
+                      height="140"
+                      image={_.get(post, 'images.0.data_url') || '/default.jpg'}
+                    />
+                    <CardContent>
+                      <Typography gutterBottom variant="h5" component="h2" sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span>
+                          {post.title}
+                        </span>
+                        <span>
+                          {`${post.price}$`}
+                        </span>
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {post.description}
+                      </Typography>
+                    </CardContent>
+                    <CardActions>
+                      <IconButton>
                         <FavoriteBorderIcon color="error" />
-                        {/* <Button size="small">Edit</Button> */}
-                      </CardActions>
-                    </Grid>
-                  </Grid>
-                </Card>
-              </Grid>
-            ))}
+                      </IconButton>
+                      <Button size="small">
+                        <Link href={`/post/${post.id}`} variant="body2">
+                          View
+                        </Link>
+                      </Button>
+                      <Button size="small">
+                        <Link href={`/post/${post.id}/edit`} variant="body2">
+                          Edit
+                        </Link>
+                      </Button>
+                    </CardActions>
+                  </Card>
+                </Grid>
+              ))}
           </Grid>
         </Container>
       </main>
-    </ThemeProvider>
+    </ThemeProvider >
   );
 }
 

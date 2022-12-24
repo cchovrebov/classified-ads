@@ -35,14 +35,17 @@ const initialState = {
   error: initialError
 }
 
-const postCreateSlice = createSlice({
-  name: 'postCreateSlice',
+const postEditSlice = createSlice({
+  name: 'postEditSlice',
   initialState,
   reducers: {
-    setLoadingPostCreate(state, action) {
+    setLoadingPostEdit(state, action) {
       state.isLoading = action.payload;
     },
     setPost(state, action) {
+      state.post = action.payload;
+    },
+    updatePost(state, action) {
       state.post[action.payload.inputName] = action.payload.value;
     },
     setError(state, action) {
@@ -51,5 +54,5 @@ const postCreateSlice = createSlice({
   },
 })
 
-export const { setPost, setError, setLoadingPostCreate } = postCreateSlice.actions
-export default postCreateSlice.reducer
+export const { setPost, setError, updatePost, setLoadingPostEdit } = postEditSlice.actions
+export default postEditSlice.reducer

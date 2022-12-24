@@ -7,7 +7,8 @@ module.exports = mongoose => {
       price: Number,
       category: String,
       images: String,
-      published: Boolean
+      published: Boolean,
+      user: String
     },
     { timestamps: true }
   );

@@ -1,25 +1,39 @@
 import { createSlice } from '@reduxjs/toolkit'
 
-const initialState = {
-  post: {
-    title: '',
-    price: 0,
-    category: '',
-    description: '',
-    images: '',
+export const initialError = {
+  title: {
+    show: false,
+    message: 'Title is not correct'
   },
+};
+
+const initialState = {
+  category: {
+    title: '',
+  },
+  categories: [],
   isLoading: false,
+  error: initialError,
 }
 
-const postCreateSlice = createSlice({
-  name: 'postCreateSlice',
+const categoriesSlice = createSlice({
+  name: 'categoriesSlice',
   initialState,
   reducers: {
-    setPost(state, action) {
-      state.post[action.payload.inputName] = action.payload.value;
+    setLoading(state, action) {
+      state.isLoading = action.payload;
+    },
+    setCategories(state, action) {
+      state.categories = action.payload;
+    },
+    setCategory(state, action) {
+      state.category[action.payload.inputName] = action.payload.value;
+    },
+    setError(state, action) {
+      state.error = action.payload
     },
   },
 })
 
-export const { setPost } = postCreateSlice.actions
-export default postCreateSlice.reducer
+export const { setCategory, setLoading, setCategories, setError } = categoriesSlice.actions
+export default categoriesSlice.reducer
