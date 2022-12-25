@@ -11,7 +11,7 @@ import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
 import { useSelector } from 'react-redux';
-import FavoriteIcon from '@mui/icons-material/Favorite';
+import StarIcon from '@mui/icons-material/Star';
 import Badge from '@mui/material/Badge';
 import Link from '@mui/material/Link';
 import _ from 'lodash';
@@ -122,7 +122,7 @@ function ResponsiveAppBar() {
           <Box sx={{ flexGrow: 0 }}>
             <Link href="/liked" variant="body2">
               <Badge badgeContent={likedPostsReducer.posts?.length} color="error">
-                <FavoriteIcon color="action" />
+                <StarIcon size="large" color="warning" />
               </Badge>
             </Link>
             <Menu

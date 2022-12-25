@@ -9,8 +9,8 @@ import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import FavoriteIcon from '@mui/icons-material/Favorite';
+import StarIcon from '@mui/icons-material/Star';
+import StarBorderIcon from '@mui/icons-material/StarBorder';
 import Navigation from '../../../components/Navigation/Navigation';
 import { useSelector, useDispatch } from 'react-redux';
 import { getLikedPosts } from '../../../services/post';
@@ -92,11 +92,11 @@ const LikedPostsPage = () => {
                       <IconButton>
                         {_.find(likedPostsReducer.posts, { id: post.id }) ? (
                           <IconButton onClick={() => handleUnlike(post.id)}>
-                            <FavoriteIcon color="error" />
+                            <StarIcon color="warning" />
                           </IconButton>
                         ) : (
                           <IconButton onClick={() => handleLike(post.id)}>
-                            <FavoriteBorderIcon color="error" />
+                            <StarBorderIcon color="warning" />
                           </IconButton>
                         )}
                       </IconButton>

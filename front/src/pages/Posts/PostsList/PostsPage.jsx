@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
@@ -9,27 +9,37 @@ import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import FavoriteIcon from '@mui/icons-material/Favorite';
+import StarIcon from '@mui/icons-material/Star';
+import StarBorderIcon from '@mui/icons-material/StarBorder';
 import Navigation from '../../../components/Navigation/Navigation';
+import TextField from '@mui/material/TextField';
 import { useSelector, useDispatch } from 'react-redux';
 import { getPublishedPosts, likePost, removeLike, removePost } from '../../../services/post';
 import { setLoading, setPosts } from './postsSlice';
 import { setPosts as setLikedPosts } from '../LikedPosts/likedPostsSlice';
+import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
+import { setCategories } from '../../Cotegories/CategoriesList/categoriesSlice';
+import { getCategories } from '../../../services/category';
 import IconButton from '@mui/material/IconButton';
 import Link from '@mui/material/Link';
 import _ from 'lodash'
 
 const theme = createTheme();
+const filter = createFilterOptions();
 
 const PostsPage = () => {
-  const postsReducer = useSelector((state) => state.postsReducer);
-  const likedPostsReducer = useSelector((state) => state.likedPostsReducer);
-  const userReducer = useSelector((state) => state.userReducer);
+  const [value, setValue] = useState(null);
+  const [fiteredPosts, setFiteredPosts] = useState(null);
+  const {
+    postsReducer,
+    categoriesReducer,
+    likedPostsReducer,
+    userReducer
+  } = useSelector((state) => state);
+
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(setLoading(true))
     getPublishedPosts()
       .then(data => {
         const mappedData = _.map(data, (post) => ({
@@ -41,10 +51,21 @@ const PostsPage = () => {
         }))
         dispatch(setPosts(mappedData))
         dispatch(setLoading(false))
-      }).catch(() => {
-        dispatch(setLoading(false))
+      })
+    getCategories()
+      .then(data => {
+        dispatch(setCategories(data))
       })
   }, [dispatch])
+
+  useEffect(() => {
+    if (value) {
+      const filtered = _.filter(postsReducer.posts, (post) => post.category === value.id)
+      setFiteredPosts(filtered)
+    } else {
+      setFiteredPosts(postsReducer.posts)
+    }
+  }, [value, postsReducer.posts])
 
   const handleLike = async (postId) => {
     const likedPost = await likePost({ postId });
@@ -66,15 +87,78 @@ const PostsPage = () => {
     dispatch(setPosts(posts))
   }
 
+  const handleSearch = async (text) => {
+    const filtered = _.filter(postsReducer.posts, (post) => _.includes(_.toLower(post.title), _.toLower(text))
+      || _.includes(_.toLower(post.description), _.toLower(text)))
+    setFiteredPosts(filtered)
+  }
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Navigation />
       <main>
         <Container style={{ marginTop: '30px' }}>
+          <Grid container spacing={1}>
+            <Grid item xs={4}>
+              <Autocomplete
+                value={value}
+                onChange={(event, newValue) => {
+                  if (typeof newValue === 'string') {
+                    setValue({
+                      title: newValue,
+                    });
+                  } else if (newValue && newValue.inputValue) {
+                    // Create a new value from the user input
+                    setValue({
+                      title: newValue.inputValue,
+                    });
+                  } else {
+                    setValue(newValue);
+                  }
+                }}
+                filterOptions={(options, params) => {
+                  const filtered = filter(options, params);
+
+                  const { inputValue } = params;
+                  // Suggest the creation of a new value
+                  const isExisting = options.some((option) => inputValue === option.title);
+                  if (inputValue !== '' && !isExisting) {
+                    filtered.push({
+                      inputValue,
+                      title: `Add "${inputValue}"`,
+                    });
+                  }
+
+                  return filtered;
+                }}
+                selectOnFocus
+                clearOnBlur
+                handleHomeEndKeys
+                id="free-solo-with-text-demo"
+                options={categoriesReducer.categories}
+                getOptionLabel={(option) => option.title}
+                renderOption={(props, option) => <li {...props} key={option.id}>{option.title}</li>}
+                sx={{ mb: 2, width: 300 }}
+                freeSolo
+                renderInput={(params) => (
+                  <TextField {...params} label="Category" />
+                )}
+              />
+            </Grid>
+            <Grid item xs={3}>
+              <TextField
+                fullWidth
+                id="title"
+                label="Search by title and description"
+                name="search"
+                onInput={(e) => handleSearch(e.target.value)}
+              />
+            </Grid>
+          </Grid>
           <Grid container spacing={6}>
-            {_.map(
-              _.orderBy(postsReducer.posts, ['createdAt'], ['desc']),
+            {_.size(fiteredPosts) ? _.map(
+              _.orderBy(fiteredPosts, ['createdAt'], ['desc']),
               (post) => (
                 <Grid item key={post.id} xs={12} sm={6} md={4}>
                   <Card>
@@ -100,11 +184,11 @@ const PostsPage = () => {
                     <CardActions>
                       {_.find(likedPostsReducer.posts, { id: post.id }) ? (
                         <IconButton onClick={() => handleUnlike(post.id)}>
-                          <FavoriteIcon color="error" />
+                          <StarIcon color="warning" />
                         </IconButton>
                       ) : (
                         <IconButton onClick={() => handleLike(post.id)}>
-                          <FavoriteBorderIcon color="error" />
+                          <StarBorderIcon color="warning" />
                         </IconButton>
                       )}
                       <Button size="small">
@@ -127,7 +211,7 @@ const PostsPage = () => {
                     </CardActions>
                   </Card>
                 </Grid>
-              ))}
+              )) : <Grid item xs={12}>No data available</Grid>}
           </Grid>
         </Container>
       </main>
