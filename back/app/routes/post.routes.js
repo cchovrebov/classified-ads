@@ -29,7 +29,7 @@ module.exports = app => {
   router.delete("/", post.deleteAll);
 
   // Publish a category with id
-  router.put("/publish/:id", app.use(isAdminInMiddleware), post.publish);
+  router.put("/publish/:id", post.publish);
 
   app.use("/api/post", router);
 };

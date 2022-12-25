@@ -13,24 +13,23 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import Navigation from '../../../components/Navigation/Navigation';
 import { useSelector, useDispatch } from 'react-redux';
-import { getPublishedPosts, likePost, removeLike } from '../../../services/post';
-import { setLoading, setPosts } from './postsSlice';
-import { setPosts as setLikedPosts } from '../LikedPosts/likedPostsSlice';
+import { getLikedPosts } from '../../../services/post';
+import { setLoading, setPosts } from './likedPostsSlice';
 import IconButton from '@mui/material/IconButton';
+import { likePost, removeLike } from '../../../services/post';
 import Link from '@mui/material/Link';
 import _ from 'lodash'
 
 const theme = createTheme();
 
-const PostsPage = () => {
-  const postsReducer = useSelector((state) => state.postsReducer);
+const LikedPostsPage = () => {
   const likedPostsReducer = useSelector((state) => state.likedPostsReducer);
   const userReducer = useSelector((state) => state.userReducer);
   const dispatch = useDispatch();
 
   useEffect(() => {
     dispatch(setLoading(true))
-    getPublishedPosts()
+    getLikedPosts()
       .then(data => {
         const mappedData = _.map(data, (post) => ({
           ...post,
@@ -41,14 +40,12 @@ const PostsPage = () => {
         }))
         dispatch(setPosts(mappedData))
         dispatch(setLoading(false))
-      }).catch(() => {
-        dispatch(setLoading(false))
-      })
+      }).catch(() => dispatch(setLoading(false)))
   }, [dispatch])
 
   const handleLike = async (postId) => {
     const likedPost = await likePost({ postId });
-    dispatch(setLikedPosts([
+    dispatch(setPosts([
       likedPost,
       ...likedPostsReducer.posts
     ]));
@@ -57,7 +54,7 @@ const PostsPage = () => {
   const handleUnlike = async (postId) => {
     await removeLike(postId);
     const likedPosts = _.filter(likedPostsReducer.posts, post => post.id !== postId);
-    dispatch(setLikedPosts(likedPosts));
+    dispatch(setPosts(likedPosts));
   }
 
   return (
@@ -68,7 +65,7 @@ const PostsPage = () => {
         <Container style={{ marginTop: '30px' }}>
           <Grid container spacing={6}>
             {_.map(
-              _.orderBy(postsReducer.posts, ['createdAt'], ['desc']),
+              _.orderBy(likedPostsReducer.posts, ['createdAt'], ['desc']),
               (post) => (
                 <Grid item key={post.id} xs={12} sm={6} md={4}>
                   <Card>
@@ -92,15 +89,17 @@ const PostsPage = () => {
                       </Typography>
                     </CardContent>
                     <CardActions>
-                      {_.find(likedPostsReducer.posts, { id: post.id }) ? (
-                        <IconButton onClick={() => handleUnlike(post.id)}>
-                          <FavoriteIcon color="error" />
-                        </IconButton>
-                      ) : (
-                        <IconButton onClick={() => handleLike(post.id)}>
-                          <FavoriteBorderIcon color="error" />
-                        </IconButton>
-                      )}
+                      <IconButton>
+                        {_.find(likedPostsReducer.posts, { id: post.id }) ? (
+                          <IconButton onClick={() => handleUnlike(post.id)}>
+                            <FavoriteIcon color="error" />
+                          </IconButton>
+                        ) : (
+                          <IconButton onClick={() => handleLike(post.id)}>
+                            <FavoriteBorderIcon color="error" />
+                          </IconButton>
+                        )}
+                      </IconButton>
                       <Button size="small">
                         <Link href={`/post/${post.id}`} variant="body2">
                           View
@@ -124,4 +123,4 @@ const PostsPage = () => {
   );
 }
 
-export default PostsPage;
+export default LikedPostsPage;

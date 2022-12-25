@@ -56,15 +56,11 @@ const SignUp = () => {
       return dispatch(setError(error))
     }
 
-    try {
-      await signUpReq(userReducer.user);
-      const signInRes = await signInReq(userReducer.user);
-      localStorage.setItem('token', signInRes.token);
-      dispatch(setToken(signInRes.token));
-      navigate('/');
-    } catch (error) {
-      alert(error.message)
-    }
+    await signUpReq(userReducer.user);
+    const signInRes = await signInReq(userReducer.user);
+    localStorage.setItem('token', signInRes.token);
+    dispatch(setToken(signInRes.token));
+    navigate('/');
   };
 
   const handleInputChange = (value, inputName) => {

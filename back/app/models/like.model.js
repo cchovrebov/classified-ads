@@ -1,7 +1,8 @@
 module.exports = mongoose => {
   const schema = mongoose.Schema(
     {
-      title: String,
+      user: String,
+      post: String,
     },
     { timestamps: true }
   );
@@ -12,6 +13,6 @@ module.exports = mongoose => {
     return object;
   });
 
-  const Category = mongoose.model("category", schema);
-  return Category;
+  const Post = mongoose.model("like", schema);
+  return Post;
 };

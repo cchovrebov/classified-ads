@@ -76,19 +76,14 @@ const PostCreatePage = () => {
       return dispatch(setError(error))
     }
 
-    try {
-      dispatch(setLoadingPostCreate(true))
-      const createdPost = await createPost(postCreateReducer.post);
-      createdPost.images = _.map(
-        _.split(createdPost.images, '[SEPARATOR]'),
-        data_url => ({ data_url })
-      );
-      alert('Post created successfully, wait admin approval')
-    } catch (error) {
-      alert(error.message)
-    } finally {
-      dispatch(setLoadingPostCreate(false))
-    }
+    dispatch(setLoadingPostCreate(true))
+    const createdPost = await createPost(postCreateReducer.post);
+    createdPost.images = _.map(
+      _.split(createdPost.images, '[SEPARATOR]'),
+      data_url => ({ data_url })
+    );
+    alert('Post created successfully, wait admin approval')
+    dispatch(setLoadingPostCreate(false))
   };
 
 

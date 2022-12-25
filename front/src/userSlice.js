@@ -26,6 +26,8 @@ const initialState = {
     email: '',
     password: '',
     repeatPassword: '',
+    role: '',
+    id: '',
   },
   token: localStorage.getItem('token') || null,
   isLoading: false,

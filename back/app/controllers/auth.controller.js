@@ -24,45 +24,43 @@ const validPassword = ({
 }) => bcrypt.compareSync(password, user.password);
 
 // Sign in
-exports.signIn = (req, res) => {
+exports.signIn = async (req, res) => {
   const {
     username,
     password,
   } = req.body;
+
   if (!username || !password) {
     res.status(400).send({ message: "Some credentials are missing" });
     return;
   }
 
-  const query = { username };
-
-  User.find(query)
-    .then(async (data) => {
-      const user = _.first(data);
-      const isPassValid = validPassword({
-        password,
-        user,
-      })
-      if (!user) {
-        return res.status(404).send({ message: "No such user" });
-      } else if (!isPassValid) {
-        return res.status(404).send({ message: "Incorrect password" });
-      } else {
-        const response = {
-          username: user.username,
-          email: user.email,
-          id: user.id,
-          role: user.role,
-          token: generateJWT(user),
-        }
-        res.send(response)
-      };
+  try {
+    const query = { username };
+    const data = await User.find(query);
+    const user = _.first(data);
+    const isPassValid = validPassword({
+      password,
+      user,
     })
-    .catch(err => {
-      return res
-        .status(500)
-        .send({ message: "Login error" });
-    });
+    if (!user) {
+      return res.status(404).send({ message: "No such user" });
+    } else if (!isPassValid) {
+      return res.status(404).send({ message: "Incorrect password" });
+    }
+    const response = {
+      username: user.username,
+      email: user.email,
+      id: user.id,
+      role: user.role,
+      token: generateJWT(user),
+    }
+    return res.send(response);
+  } catch (error) {
+    return res
+      .status(500)
+      .send({ message: "Login error" })
+  }
 };
 
 // Sign in

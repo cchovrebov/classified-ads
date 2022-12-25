@@ -93,19 +93,14 @@ const PostEditPage = () => {
       return dispatch(setError(error))
     }
 
-    try {
-      dispatch(setLoadingPostEdit(true))
-      const createdPost = await patchPost(id, postEditReducer.post);
-      createdPost.images = _.map(
-        _.split(createdPost.images, '[SEPARATOR]'),
-        data_url => ({ data_url })
-      );
-      alert('Post created successfully, wait admin approval')
-    } catch (error) {
-      alert(error.message)
-    } finally {
-      dispatch(setLoadingPostEdit(false))
-    }
+    dispatch(setLoadingPostEdit(true))
+    const updatedPost = await patchPost(id, postEditReducer.post);
+    updatedPost.images = _.map(
+      _.split(updatedPost.images, '[SEPARATOR]'),
+      data_url => ({ data_url })
+    );
+    alert('Post updated successfully, wait admin approval')
+    dispatch(setLoadingPostEdit(false))
   };
 
 

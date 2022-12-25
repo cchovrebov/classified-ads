@@ -34,25 +34,18 @@ const PostsApprove = () => {
         }))
         dispatch(setPosts(mappedData))
         dispatch(setLoading(false))
-      }).catch(() => {
-        dispatch(setLoading(false))
-      })
+      }).catch(() => dispatch(setLoading(false)))
   }, [dispatch])
 
 
   const handlePublishClick = async (adId) => {
-    try {
-      await publishPost(adId);
-      dispatch(setPosts(
-        _.filter(
-          postsApproveReducer.posts,
-          post => post.id !== adId
-        )
-      ))
-      // dispatch(publishAd(adId));
-    } catch (error) {
-      alert(error.message);
-    }
+    await publishPost(adId);
+    dispatch(setPosts(
+      _.filter(
+        postsApproveReducer.posts,
+        post => post.id !== adId
+      )
+    ))
   };
 
   return (

@@ -8,9 +8,9 @@ import Menu from '@mui/material/Menu';
 import MenuIcon from '@mui/icons-material/Menu';
 import Container from '@mui/material/Container';
 import Button from '@mui/material/Button';
-import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
+import { useSelector } from 'react-redux';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import Badge from '@mui/material/Badge';
 import Link from '@mui/material/Link';
@@ -35,6 +35,7 @@ const pages = [
 ];
 
 function ResponsiveAppBar() {
+  const likedPostsReducer = useSelector((state) => state.likedPostsReducer);
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
 
@@ -114,11 +115,13 @@ function ResponsiveAppBar() {
           </Box>
 
           <Box sx={{ flexGrow: 0 }}>
-            <Tooltip title="Open settings">
-              <Badge badgeContent={4} color="error">
-                <FavoriteIcon />
-              </Badge>
-            </Tooltip>
+            {likedPostsReducer.posts?.length && (
+              <Link href="/liked" variant="body2">
+                <Badge badgeContent={likedPostsReducer.posts?.length} color="error">
+                  <FavoriteIcon color="action" />
+                </Badge>
+              </Link>
+            )}
             <Menu
               sx={{ mt: '45px' }}
               id="menu-appbar"

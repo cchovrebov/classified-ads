@@ -1,5 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit'
 import postsReducer from '../pages/Posts/PostsList/postsSlice'
+import likedPostsReducer from '../pages/Posts/LikedPosts/likedPostsSlice'
 import postsApproveReducer from '../pages/Posts/PostsApprove/postsApproveSlice'
 import postCreateReducer from '../pages/Posts/PostCreate/postCreateSlice'
 import postEditReducer from '../pages/Posts/PostEdit/postEditSlice'
@@ -12,6 +13,7 @@ export default configureStore({
   }),
   reducer: {
     postsApproveReducer,
+    likedPostsReducer,
     postCreateReducer,
     categoriesReducer,
     postEditReducer,

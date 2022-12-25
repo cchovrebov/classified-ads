@@ -1,4 +1,7 @@
 import axios from 'axios'
+import errorInterceptor from './errorInterceptor';
+axios.interceptors.response.use(errorInterceptor);
+
 const url = 'http://localhost:8080'
 
 export const getCategories = async () => {
