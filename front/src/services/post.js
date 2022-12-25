@@ -40,6 +40,17 @@ export const getPost = async (id) => {
   }
 }
 
+export const removePost = async (id) => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await axios.delete(`${url}/api/post/${id}`, {
+      headers: { token }
+    });
+    return response.data
+  } catch (error) {
+    throw new Error(error.message);
+  }
+}
 
 export const createPost = async (payload) => {
   try {

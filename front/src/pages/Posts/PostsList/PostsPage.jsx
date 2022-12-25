@@ -13,7 +13,7 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import Navigation from '../../../components/Navigation/Navigation';
 import { useSelector, useDispatch } from 'react-redux';
-import { getPublishedPosts, likePost, removeLike } from '../../../services/post';
+import { getPublishedPosts, likePost, removeLike, removePost } from '../../../services/post';
 import { setLoading, setPosts } from './postsSlice';
 import { setPosts as setLikedPosts } from '../LikedPosts/likedPostsSlice';
 import IconButton from '@mui/material/IconButton';
@@ -58,6 +58,12 @@ const PostsPage = () => {
     await removeLike(postId);
     const likedPosts = _.filter(likedPostsReducer.posts, post => post.id !== postId);
     dispatch(setLikedPosts(likedPosts));
+  }
+
+  const handlePostRemove = async (postId) => {
+    await removePost(postId);
+    const posts = _.filter(postsReducer.posts, post => post.id !== postId);
+    dispatch(setPosts(posts))
   }
 
   return (
@@ -111,6 +117,11 @@ const PostsPage = () => {
                           <Link href={`/post/${post.id}/edit`} variant="body2">
                             Edit
                           </Link>
+                        </Button>
+                      )}
+                      {(userReducer.user.role === 'admin' || userReducer.user.id === post.user) && (
+                        <Button onClick={() => handlePostRemove(post.id)} size="small">
+                          Remove
                         </Button>
                       )}
                     </CardActions>

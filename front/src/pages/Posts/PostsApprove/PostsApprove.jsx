@@ -11,7 +11,7 @@ import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Navigation from '../../../components/Navigation/Navigation';
 import { useSelector, useDispatch } from 'react-redux';
-import { getPosts, publishPost } from '../../../services/post';
+import { getPosts, publishPost, removePost } from '../../../services/post';
 import { setLoading, setPosts } from './postsApproveSlice';
 import _ from 'lodash'
 
@@ -47,6 +47,12 @@ const PostsApprove = () => {
       )
     ))
   };
+
+  const handlePostRemove = async (postId) => {
+    await removePost(postId);
+    const posts = _.filter(postsApproveReducer.posts, post => post.id !== postId);
+    dispatch(setPosts(posts))
+  }
 
   return (
     <ThemeProvider theme={theme}>
@@ -93,6 +99,7 @@ const PostsApprove = () => {
                         </CardContent>
                         <CardActions>
                           <Button onClick={() => handlePublishClick(post.id)} size="small">Publish</Button>
+                          <Button onClick={() => handlePostRemove(post.id)} size="small">Remove</Button>
                         </CardActions>
                       </Grid>
                     </Grid>

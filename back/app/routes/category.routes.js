@@ -12,19 +12,16 @@ module.exports = app => {
   const router = require("express").Router();
 
   // Retrieve all categories
-  router.get("/", category.findAll);
-
-  // Retrieve a single category with id
-  router.get("/:id", category.findOne);
+  router.get("/", isSignedInMiddleware, category.findAll);
 
   // Update a category with id
-  router.put("/:id", category.update);
+  router.put("/:id", isAdminInMiddleware, category.update);
 
   // Delete a category with id
-  router.delete("/:id", category.delete);
+  router.delete("/:id", isAdminInMiddleware, category.delete);
 
   // Create a new category
-  router.post("/", category.create);
+  router.post("/", isAdminInMiddleware, category.create);
 
   app.use("/api/category", router);
 };

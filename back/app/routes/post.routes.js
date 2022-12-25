@@ -1,5 +1,7 @@
 const {
   isAdminInMiddleware,
+  isSignedInMiddleware,
+  isOwnerOrAdminEditPost,
 } = require('../moddleware/moddleware')
 
 module.exports = app => {
@@ -8,28 +10,25 @@ module.exports = app => {
   const router = require("express").Router();
 
   // Create a new post
-  router.post("/", post.create);
+  router.post("/", isSignedInMiddleware, post.create);
 
   // Retrieve all posts
-  router.get("/", post.findAll);
+  router.get("/", isAdminInMiddleware, post.findAll);
 
   // Retrieve all published posts
-  router.get("/published", post.findAllPublished);
+  router.get("/published", isSignedInMiddleware, post.findAllPublished);
 
   // Retrieve a single post with id
-  router.get("/:id", post.findOne);
+  router.get("/:id", isSignedInMiddleware, post.findOne);
 
   // Update a post with id
-  router.put("/:id", post.update);
+  router.put("/:id", isOwnerOrAdminEditPost, post.update);
 
   // Delete a post with id
-  router.delete("/:id", post.delete);
-
-  // Create a new post
-  router.delete("/", post.deleteAll);
+  router.delete("/:id", isOwnerOrAdminEditPost, post.delete);
 
   // Publish a category with id
-  router.put("/publish/:id", post.publish);
+  router.put("/publish/:id", isAdminInMiddleware, post.publish);
 
   app.use("/api/post", router);
 };

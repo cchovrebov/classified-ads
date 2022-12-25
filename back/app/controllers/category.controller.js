@@ -13,7 +13,7 @@ exports.create = async (req, res) => {
       title: req.body.title,
     });
     const response = await category.save(category);
-    return res.send(data);
+    return res.send(response);
   } catch (error) {
     return res.status(500).send({
       message:
@@ -44,7 +44,7 @@ exports.findOne = async (req, res) => {
     if (!response) {
       return res.status(404).send({ message: `Not found Category with id=${id}` });
     }
-    return res.send(data);
+    return res.send(response);
   } catch (error) {
     return res
       .status(500)

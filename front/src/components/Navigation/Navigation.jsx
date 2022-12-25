@@ -14,28 +14,34 @@ import { useSelector } from 'react-redux';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import Badge from '@mui/material/Badge';
 import Link from '@mui/material/Link';
+import _ from 'lodash';
 
 const pages = [
   {
     label: 'Posts',
     link: '/',
+    roles: ['user', 'admin']
   },
   {
     label: 'Create ad',
     link: '/create-post',
+    roles: ['user', 'admin']
   },
   {
     label: 'Approve ads',
     link: '/approve',
+    roles: ['admin']
   },
   {
     label: 'Categories',
     link: '/categories',
+    roles: ['admin']
   }
 ];
 
 function ResponsiveAppBar() {
   const likedPostsReducer = useSelector((state) => state.likedPostsReducer);
+  const userReducer = useSelector((state) => state.userReducer);
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
 
@@ -88,7 +94,6 @@ function ResponsiveAppBar() {
             >
               {pages.map((page) => (
                 <MenuItem key={page.link} onClick={handleCloseNavMenu}>
-
                   <Typography textAlign="center">
                     <Link href={page.link} variant="body2">
                       {page.label}
@@ -100,7 +105,7 @@ function ResponsiveAppBar() {
           </Box>
           <AdbIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-            {pages.map((page) => (
+            {pages.map((page) => _.includes(page.roles, userReducer.user.role) ? (
               <Button
                 key={page.link}
                 onClick={handleCloseNavMenu}
@@ -111,17 +116,15 @@ function ResponsiveAppBar() {
                   {page.label}
                 </Link>
               </Button>
-            ))}
+            ) : null)}
           </Box>
 
           <Box sx={{ flexGrow: 0 }}>
-            {likedPostsReducer.posts?.length && (
-              <Link href="/liked" variant="body2">
-                <Badge badgeContent={likedPostsReducer.posts?.length} color="error">
-                  <FavoriteIcon color="action" />
-                </Badge>
-              </Link>
-            )}
+            <Link href="/liked" variant="body2">
+              <Badge badgeContent={likedPostsReducer.posts?.length} color="error">
+                <FavoriteIcon color="action" />
+              </Badge>
+            </Link>
             <Menu
               sx={{ mt: '45px' }}
               id="menu-appbar"
@@ -138,11 +141,11 @@ function ResponsiveAppBar() {
               open={Boolean(anchorElUser)}
               onClose={handleCloseUserMenu}
             >
-              {pages.map((page) => (
+              {pages.map((page) => _.includes(page.roles, userReducer.user.role) ? (
                 <MenuItem key={page.link} onClick={handleCloseUserMenu}>
                   <Typography textAlign="center">{page.label}</Typography>
                 </MenuItem>
-              ))}
+              ) : null)}
             </Menu>
           </Box>
         </Toolbar>

@@ -4,7 +4,6 @@ import {
   Routes,
   Route
 } from "react-router-dom";
-import axios from 'axios'
 import PostsPage from "./pages/Posts/PostsList/PostsPage";
 import LikedPostsPage from "./pages/Posts/LikedPosts/LikedPostsPage";
 import PostCreatePage from "./pages/Posts/PostCreate/PostCreatePage";

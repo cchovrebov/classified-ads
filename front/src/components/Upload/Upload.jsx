@@ -50,7 +50,7 @@ const Upload = ({ onImgChange, images = [] }) => {
           >
             Remove all images
           </Button>
-          <Grid container spacing={5}>
+          <Grid style={{ margin: '15px 0' }} container spacing={5}>
             {imageList.map((image, index) => (
               <Grid item key={index} xs={12}>
                 <div key={index} className="image-item">

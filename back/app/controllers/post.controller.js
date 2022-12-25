@@ -35,7 +35,7 @@ exports.create = async (req, res) => {
 exports.findAll = async (req, res) => {
   try {
     const response = await Post.find({ published: false });
-    return res.send(data);
+    return res.send(response);
   } catch (error) {
     return res.status(500).send({
       message:
@@ -53,8 +53,9 @@ exports.findOne = async (req, res) => {
     if (!response) {
       return res.status(404).send({ message: `Not found Post with id=${id}` });
     }
-    return res.send(data);
+    return res.send(response);
   } catch (error) {
+    console.log(error);
     return res
       .status(500)
       .send({ message: `Could not retrieve Post with id=${id}` });

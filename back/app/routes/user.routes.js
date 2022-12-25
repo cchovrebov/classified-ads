@@ -1,3 +1,7 @@
+const {
+  isAdminInMiddleware,
+} = require('../moddleware/moddleware')
+
 module.exports = app => {
   const user = require("../controllers/user.controller.js");
 
@@ -5,13 +9,13 @@ module.exports = app => {
   const router = express.Router();
 
   // Create a new User
-  router.post("/", user.create);
+  router.post("/", isAdminInMiddleware, user.create);
 
   // Retrieve all User
-  router.get("/", user.findAll);
+  router.get("/", isAdminInMiddleware, user.findAll);
 
   // Delete a user with id
-  router.delete("/:id", user.delete);
+  router.delete("/:id", isAdminInMiddleware, user.delete);
 
   app.use("/api/user", router);
 };
